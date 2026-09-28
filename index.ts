@@ -57,13 +57,38 @@ async function getRetriver(chunks: Document<Record<string, any>>[]) {
   await vectorStore.addDocuments(chunks);
   return vectorStore.asRetriever(3);
 }
+//
+// const chunks = await load_spllit(simulationPdf, 'tanentId', 'user1');
+// const chunks2 = await load_spllit('./PostgreSQLNotesForProfessionals.pdf', 'psql', 'user2');
+//
+// await getRetriver(chunks);
+// const retreiver = await getRetriver(chunks2);
+//
+// const result = await retreiver.invoke('simulation');
+//
+// console.log(result);
+//
+import { ChatCohere } from '@langchain/cohere';
+import { createAgent } from 'langchain';
 
-const chunks = await load_spllit(simulationPdf, 'tanentId', 'user1');
-const chunks2 = await load_spllit('./PostgreSQLNotesForProfessionals.pdf', 'psql', 'user2');
+const llm = new ChatCohere({
+  model: 'command-a-03-2025',
+  temperature: 0,
+  maxRetries: 2,
+  // other params...
+});
 
-await getRetriver(chunks);
-const retreiver = await getRetriver(chunks2);
+// console.log((await llm.invoke('hi there')).content);
 
-const result = await retreiver.invoke('simulation');
+const agent = createAgent({
+  model: llm,
+});
 
-console.log(result);
+console.log(
+  await agent.invoke({
+    messages: [
+      { role: 'system', content: 'you are a helpful assistant' },
+      { role: 'user', content: "What's the weather in San Francisco?" },
+    ],
+  }),
+);
