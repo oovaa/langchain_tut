@@ -6,7 +6,7 @@ import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
 import { Chroma } from '@langchain/community/vectorstores/chroma';
 import { ChromaClient } from 'chromadb';
 
-const simulationPdf = './simulatipon.pdf';
+const linuxPdf = './LinuxNotesForProfessionals.pdf';
 const splitter = new RecursiveCharacterTextSplitter({
   chunkSize: 700,
   chunkOverlap: 0,
@@ -55,40 +55,53 @@ async function load_spllit(path: string, fileId: string, userId: string) {
 
 async function getRetriver(chunks: Document<Record<string, any>>[]) {
   await vectorStore.addDocuments(chunks);
-  return vectorStore.asRetriever(3);
+  return vectorStore.asRetriever({ k: 3 });
 }
 //
-// const chunks = await load_spllit(simulationPdf, 'tanentId', 'user1');
+// const chunks = await load_spllit(linuxPdf, 'tanentId', 'user1');
 // const chunks2 = await load_spllit('./PostgreSQLNotesForProfessionals.pdf', 'psql', 'user2');
+////
+//await getRetriver(chunks);
+//const retreiver = await getRetriver(chunks2);
 //
-// await getRetriver(chunks);
-// const retreiver = await getRetriver(chunks2);
 //
-// const result = await retreiver.invoke('simulation');
+await vectorStore.delete({ filter: { tenantId: 'psql' } });
+
+const retreiver = vectorStore.asRetriever({ k: 2 });
+const result = await retreiver.invoke('how to query the database');
+
+console.log(result);
+
+// import { ChatCohere } from '@langchain/cohere';
+// import { createAgent } from 'langchain';
 //
-// console.log(result);
+// const llm = new ChatCohere({
+//   model: 'command-a-03-2025',
+//   temperature: 0,
+//   maxRetries: 2,
+//   // other params...
+// });
 //
-import { ChatCohere } from '@langchain/cohere';
-import { createAgent } from 'langchain';
-
-const llm = new ChatCohere({
-  model: 'command-a-03-2025',
-  temperature: 0,
-  maxRetries: 2,
-  // other params...
-});
-
-// console.log((await llm.invoke('hi there')).content);
-
-const agent = createAgent({
-  model: llm,
-});
-
-console.log(
-  await agent.invoke({
-    messages: [
-      { role: 'system', content: 'you are a helpful assistant' },
-      { role: 'user', content: "What's the weather in San Francisco?" },
-    ],
-  }),
-);
+// // console.log((await llm.invoke('hi there')).content);
+//
+// const agent = createAgent({
+//   model: llm,
+// });
+//
+// console.log(
+//   await agent.invoke({
+//     messages: [
+//       { role: 'system', content: 'you are a helpful assistant' },
+//       { role: 'user', content: "What's the weather in San Francisco?" },
+//     ],
+//   }),
+// );
+//
+//
+//
+//
+//
+// tasks
+// - test the deletion funcionality
+// - implement and test the isolation of information
+// - fix the retriver bug
